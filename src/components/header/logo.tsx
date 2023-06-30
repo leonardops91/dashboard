@@ -9,10 +9,10 @@ export function Logo() {
         minW='48'
         border='1px'
       >
-        <Text fontWeight={"bold"} fontSize={['2xl', '3xl']}>
+        <Text fontWeight={"bold"} fontSize={['2xl', '5xl']}>
           dash
         </Text>
-        <Text as='span' color={"purple.400"} fontWeight={"bold"} fontSize={44}>
+        <Text as='span' color={"purple.400"} fontSize={['2xl', '5xl']} fontWeight={"bold"} >
           .
         </Text>
       </Flex>

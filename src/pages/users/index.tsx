@@ -3,9 +3,13 @@ import { RiAddLine, RiPencilLine } from "react-icons/ri";
 import Pagination from "../../components/pagination";
 import { User } from '../../services/mirage'
 import { useUsers } from "../../services/hooks/useUsers";
+import { useState } from "react";
+
+const registersPerPage = 5
 
 export default function UsersList() {
-  const {isLoading, isFetching, data, error} = useUsers()
+  const [currentPage, setCurrentPage] = useState(1)
+  const {isLoading, isFetching, data, error} = useUsers(currentPage, registersPerPage)
 
     return (
       <Box w='100%' h='80vh' flex='1' borderRadius={8} bg='gray.800'>
@@ -47,7 +51,7 @@ export default function UsersList() {
                   </Tr>
                 </Thead>
                 <Tbody>
-                  {data.map((user: User) => {
+                  {data && data.users.map((user: User) => {
                     return (
                       <Tr key={user.email}>
                         <Td px='6'>
@@ -78,7 +82,7 @@ export default function UsersList() {
                   })}
                 </Tbody>
               </Table>
-            <Pagination />
+            <Pagination totalCountOfRegisters={data && data.totalCount || 0} currentPage={currentPage} registersPerPage={registersPerPage} onPageChange={(number) => {setCurrentPage(number)}}/>
             </>
             )}
           </Box>
