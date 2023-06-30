@@ -1,23 +1,11 @@
 import { Box, Button, Checkbox, Flex, Heading, Icon, Table, Tbody, Td, Th, Thead, Tr, Text, Spinner } from "@chakra-ui/react";
 import { RiAddLine, RiPencilLine } from "react-icons/ri";
 import Pagination from "../../components/pagination";
-import { useQuery } from 'react-query'
 import { User } from '../../services/mirage'
+import { useUsers } from "../../services/hooks/useUsers";
 
 export default function UsersList() {
-  const {isLoading, data, error} = useQuery('users', async () => {
-    const response = await fetch('http://127.0.0.1:5173/api/users')
-    const data = await response.json()
-
-    const users = data.users.map((user: User) => {
-      return {
-        name: user.name,
-        email: user.email,
-        createdAt: new Date(user.createdAt).toLocaleDateString('pt-BR', {day: '2-digit', month: 'long', year: 'numeric'})
-      }
-    })
-    return users
-  }, { staleTime: 1000 * 5} )
+  const {isLoading, isFetching, data, error} = useUsers()
 
     return (
       <Box w='100%' h='80vh' flex='1' borderRadius={8} bg='gray.800'>
@@ -26,6 +14,7 @@ export default function UsersList() {
             <Flex mb='8' justify='space-between' align='center'>
               <Heading size='lg' fontWeight='normal'>
                 Usuários
+                {!isLoading && isFetching && <Spinner size='sm' color="gray.500" ml='4'/>}
               </Heading>
               <Button
                 as='a'
