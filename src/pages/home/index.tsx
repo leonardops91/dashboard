@@ -4,6 +4,8 @@ import { Input } from "../../components/form/input"
 import * as yup from 'yup'
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useAuthentication } from "../../contexts/AuthContext";
+import { useNavigate } from "react-router";
+import { useEffect } from "react";
 
 type SignInFormData = {
   email: string,
@@ -16,6 +18,7 @@ const signInFormSchema = yup.object().shape({
 })
 
 export default function Home() {
+    const navigation = useNavigate()
     const { signIn, isAuthenticated } = useAuthentication()
     const { register, handleSubmit, formState } = useForm({
       resolver: yupResolver(signInFormSchema)
@@ -25,6 +28,11 @@ export default function Home() {
     const handleSignIn: SubmitHandler<SignInFormData> = async (data) => {
       await signIn(data)
     }
+    useEffect(() => {
+      if (isAuthenticated) {
+        navigation("dashboard");
+      }
+    }, [isAuthenticated]);
     return (
       <Center h={"100vh"}>
         <Flex

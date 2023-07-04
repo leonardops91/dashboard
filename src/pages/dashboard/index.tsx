@@ -1,5 +1,7 @@
 import { Box, Flex, SimpleGrid, Text, theme } from "@chakra-ui/react";
+import { useEffect } from "react";
 import Chart from "react-apexcharts";
+import { authApi } from "../../services/authApi";
 
 const options = {
     chart: {
@@ -52,6 +54,7 @@ const series = [
 ]
 
 export default function Dashboard() {
+
     return (
       <Flex h={"100vh"} w='100%' my='6' flex={1} maxWidth={1480}>
         <SimpleGrid
