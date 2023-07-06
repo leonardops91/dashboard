@@ -10,7 +10,7 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path='/' element={<PublicRoutes />} />
+        <Route path='*' element={<PublicRoutes />} />
         <Route path='/*' element={<PrivateRouter />}>
           <Route path='dashboard' element={<Dashboard />} />
           <Route path='users/' element={<UsersList />} />

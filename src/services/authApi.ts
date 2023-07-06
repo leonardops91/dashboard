@@ -1,4 +1,6 @@
 import axios, { AxiosError } from "axios";
+import { server } from "../main";
+import { makeServer } from "./mirage";
 
 const token = window.localStorage.getItem("auth.token");
 let isRefreshing = false
@@ -17,11 +19,13 @@ authApi.interceptors.response.use(
     if (error.response.status === 401) {
         if (error.response.data.code === "token.expired") {
         const refreshToken = window.localStorage.getItem("auth.refreshToken");
+console.log('entrei');
 
         const originalConfig = error.config
 
         if(!isRefreshing){
             isRefreshing = true
+            server.shutdown()
             authApi
             .post("refresh", {
                 refreshToken
@@ -41,6 +45,7 @@ authApi.interceptors.response.use(
                 failedRequestsQueue = []
             }).finally(() => {
                 isRefreshing = false;
+                makeServer()
             });
         }
         return new Promise((resolve, reject) => {
@@ -56,9 +61,10 @@ authApi.interceptors.response.use(
             })
         })
       } else {
-        // deslogar
+        window.localStorage.clear()
       }
     }
+    return Promise.reject(error)
     }
     
 );

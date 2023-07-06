@@ -1,11 +1,12 @@
-import { Center, Flex, Button, Stack } from "@chakra-ui/react";
+import { Flex, Button, Stack, Alert, AlertDescription, AlertIcon, Text } from "@chakra-ui/react";
 import { FieldError, FieldValues, SubmitHandler, useForm } from "react-hook-form";
 import { Input } from "../../components/form/input"
 import * as yup from 'yup'
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useAuthentication } from "../../contexts/AuthContext";
 import { useNavigate } from "react-router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { useCan } from "../../services/hooks/useCan";
 
 type SignInFormData = {
   email: string,
@@ -23,21 +24,37 @@ export default function Home() {
     const { register, handleSubmit, formState } = useForm({
       resolver: yupResolver(signInFormSchema)
     })
+    const [ loginError, setLoginError ] = useState(false)
     const errors = formState.errors
 
     const handleSignIn: SubmitHandler<SignInFormData> = async (data) => {
-      await signIn(data)
+      await signIn(data).then(response => {
+        setLoginError(response.status === 401)
+      })
+      
+
     }
+
+
+
     useEffect(() => {
       if (isAuthenticated) {
         navigation("dashboard");
       }
     }, [isAuthenticated]);
     return (
-      <Center h={"100vh"}>
+      <Flex
+        gap={2}
+        direction='column'
+        align='center'
+        justify='center'
+        h={"100vh"}
+        transition='all'
+      >
         <Flex
           as='form'
           direction={"column"}
+          justify='center'
           gap={3}
           bg={"gray.700"}
           p={10}
@@ -73,6 +90,14 @@ export default function Home() {
             Entrar
           </Button>
         </Flex>
-      </Center>
+        {loginError && (
+          <Alert status='error' w={"100%"} maxW={"384px"} borderRadius={8}>
+            <AlertIcon />
+            <AlertDescription color='gray.700'>
+              Usuário ou senha incorretos
+            </AlertDescription>
+          </Alert>
+        )}
+      </Flex>
     );
 }

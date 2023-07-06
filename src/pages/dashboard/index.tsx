@@ -2,6 +2,8 @@ import { Box, Flex, SimpleGrid, Text, theme } from "@chakra-ui/react";
 import { useEffect } from "react";
 import Chart from "react-apexcharts";
 import { authApi } from "../../services/authApi";
+import { useNavigate } from "react-router-dom";
+import Can from "../../components/can";
 
 const options = {
     chart: {
@@ -54,28 +56,47 @@ const series = [
 ]
 
 export default function Dashboard() {
+  const navigation = useNavigate()
 
+    useEffect( () => {
+      authApi.get('me').catch(() => {
+        window.localStorage.clear()
+        navigation('/')
+      })
+    }, [])
     return (
-      <Flex h={"100vh"} w='100%' my='6' flex={1} maxWidth={1480}>
-        <SimpleGrid
-          flex='1'
-          gap='4'
-          minChildWidth='328px'
-          alignItems='flex-start'
-        >
-          <Box p='8' bg='gray.800' borderRadius={8}>
-            <Text fontSize='lg' mb='4'>
-              Inscritos da semana
-            </Text>
-            <Chart type='area' height={160} options={options} series={series} />
-          </Box>
-          <Box p='8' bg='gray.800' borderRadius={8}>
-            <Text fontSize='lg' mb='4'>
-              Taxa de abertura
-            </Text>
-            <Chart type='area' height={160} options={options} series={series} />
-          </Box>
-        </SimpleGrid>
-      </Flex>
+      <Can permissions={['metrics.list']}>
+        <Flex h={"100vh"} w='100%' my='6' flex={1} maxWidth={1480}>
+          <SimpleGrid
+            flex='1'
+            gap='4'
+            minChildWidth='328px'
+            alignItems='flex-start'
+          >
+            <Box p='8' bg='gray.800' borderRadius={8}>
+              <Text fontSize='lg' mb='4'>
+                Inscritos da semana
+              </Text>
+              <Chart
+                type='area'
+                height={160}
+                options={options}
+                series={series}
+              />
+            </Box>
+            <Box p='8' bg='gray.800' borderRadius={8}>
+              <Text fontSize='lg' mb='4'>
+                Taxa de abertura
+              </Text>
+              <Chart
+                type='area'
+                height={160}
+                options={options}
+                series={series}
+              />
+            </Box>
+          </SimpleGrid>
+        </Flex>
+      </Can>
     );
 }

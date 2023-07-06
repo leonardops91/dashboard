@@ -5,6 +5,8 @@ import { NotificationNav } from "./notificationsNav";
 import { Profile } from "./profile";
 import { RiMenuLine } from "react-icons/ri";
 import { useSidebarDrawer } from "../../contexts/SidebarDrawerContext";
+import { useEffect } from "react";
+import { server } from '../../main'
 
 
 export function Header() {
@@ -13,6 +15,12 @@ export function Header() {
     lg: true
   })
   const { onOpen } = useSidebarDrawer()
+
+  const token = window.localStorage.getItem('auth.token')
+
+  useEffect(() => {
+    if (!token) server.shutdown();
+  }, [token])
     return (
       <Flex
         as='header'
