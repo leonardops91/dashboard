@@ -1,6 +1,5 @@
 import axios, { AxiosError } from "axios";
-import { server } from "../main";
-import { makeServer } from "./mirage";
+import { createMirageServer, shutDownMirageServer } from "./mirage/server";
 
 const token = window.localStorage.getItem("auth.token");
 let isRefreshing = false
@@ -11,6 +10,7 @@ export const authApi = axios.create({
   headers: { 'Authorization': `Bearer ${token}` },
 });
 
+//intercepta retorno do servidor a procura de erro de token expirado e faz refresh 
 authApi.interceptors.response.use(
   (response) => {
     return response;
@@ -19,13 +19,12 @@ authApi.interceptors.response.use(
     if (error.response.status === 401) {
         if (error.response.data.code === "token.expired") {
         const refreshToken = window.localStorage.getItem("auth.refreshToken");
-console.log('entrei');
 
         const originalConfig = error.config
 
         if(!isRefreshing){
             isRefreshing = true
-            server.shutdown()
+            shutDownMirageServer()
             authApi
             .post("refresh", {
                 refreshToken
@@ -45,7 +44,7 @@ console.log('entrei');
                 failedRequestsQueue = []
             }).finally(() => {
                 isRefreshing = false;
-                makeServer()
+                createMirageServer()
             });
         }
         return new Promise((resolve, reject) => {

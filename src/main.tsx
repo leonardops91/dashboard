@@ -4,16 +4,9 @@ import App from './App.tsx'
 import { ChakraProvider } from '@chakra-ui/react'
 import { theme } from './styles/theme.ts'
 import { SidebarDrawerProvider } from './contexts/SidebarDrawerContext.tsx'
-import { makeServer } from './services/mirage/index.ts'
 import { QueryClient, QueryClientProvider } from 'react-query'
 import { ReactQueryDevtools } from 'react-query/devtools'
 import { AuthProvider } from './contexts/AuthContext.tsx'
-
-const token = window.localStorage.getItem('auth.token')
-export const server = makeServer();
-if (process.env.NODE_ENV !== 'development' || !token) {
-  server.shutdown();
-} 
 
 export const queryClient = new QueryClient()
 

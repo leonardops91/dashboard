@@ -11,6 +11,7 @@ export default function UsersList() {
   const [currentPage, setCurrentPage] = useState(1)
   const {isLoading, isFetching, data, error} = useUsers(currentPage, registersPerPage)
 
+
     return (
       <Box w='100%' h='80vh' flex='1' borderRadius={8} bg='gray.800'>
         <Flex w='100%' my='6' maxW={1480} mx='auto' px='6'>

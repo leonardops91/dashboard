@@ -1,8 +1,7 @@
 import { ReactNode, createContext, useContext, useEffect, useState } from "react";
 import { authApi } from "../services/authApi";
 import { AxiosError } from "axios";
-import { server } from "../main";
-import { makeServer } from "../services/mirage";
+import { createMirageServer, shutDownMirageServer } from "../services/mirage/server";
 
 type User = {
   email: string;
@@ -37,6 +36,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   async function signIn({ email, password }: SignInCredentials) {
     try {
+      shutDownMirageServer()
       const response = await authApi.post("sessions", {
         email,
         password,
@@ -50,6 +50,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setUser({ email, permissions, roles });
 
       authApi.defaults.headers['Authorization'] = `Bearer ${token}`;
+      createMirageServer()
       return response
     } catch (error) {
       const loginError = error as AxiosError
@@ -63,10 +64,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
   function signOut() {
     window.localStorage.clear()
     setUser(undefined)
-    server.shutdown();
+    shutDownMirageServer()
     authChannel.postMessage('signOut')
   }
 
+  //verifica se alguma aba mandou msg de que user fez logout
   useEffect(() => {
     authChannel.onmessage = (message) => {
       switch (message.data) {
@@ -79,11 +81,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, [])
 
+  // testa se o usuário está autenticado
   useEffect(() => {
     const authToken = window.localStorage.getItem("auth.token");
 
     if(authToken) {
-      server.shutdown()
+      shutDownMirageServer()
       setIsRefreshing(true)
       authApi
         .get("/me")
@@ -93,10 +96,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
         })
         .catch(() => {
           window.localStorage.clear()
+        }).finally(() => {
+          createMirageServer()
         });
-        makeServer()
         setIsRefreshing(false)
-
     }
   }, [])
   return (

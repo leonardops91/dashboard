@@ -1,102 +1,70 @@
-import { Box, Flex, SimpleGrid, Text, theme } from "@chakra-ui/react";
-import { useEffect } from "react";
-import Chart from "react-apexcharts";
-import { authApi } from "../../services/authApi";
-import { useNavigate } from "react-router-dom";
+import { Center, Flex, Heading, Spinner } from "@chakra-ui/react";
+import { useEffect, useState } from "react";
 import Can from "../../components/can";
+import { LineChart, Line, XAxis, YAxis, Tooltip } from "recharts";
+import { api } from "../../services/api";
 
-const options = {
-    chart: {
-        toolbar: {
-            show: false
-        },
-        zoom: {
-            enabled: false,
-        },
-        foreColor: theme.colors.gray['500'],
-    },
-    grid: {
-        show:false,
-    },
-    dataLabels:{
-        enabled: false,
-    },
-    tooltip: {
-        enabled: false,
-    },
-    xaxis: {
-        type: 'datetime',
-        axisBorder: {
-            color: theme.colors.gray['600'],
-        },
-        axisTicks: {
-            color: theme.colors.gray['600'],
-        },
-        categories: [
-            '2023-06-13',
-            '2023-06-14',
-            '2023-06-15',
-            '2023-06-16',
-            '2023-06-17',
-            '2023-06-18',
-        ]
-    },
-    fill: {
-        opacity: 0.3,
-        type: 'gradient',
-        gradient: {
-            shade: 'dark',
-            opacityFrom: 0.7,
-            opacityTo: 0.3
-        }
-    }
-}
-const series = [
-    {name: "Series1", data:[31, 120, 10, 28, 51, 109]}
-]
 
 export default function Dashboard() {
-  const navigation = useNavigate()
+  const [usersPerMonth, setUsersPerMonth] = useState<{ month: string; count: unknown; }[]>([])
+  
 
-    useEffect( () => {
-      authApi.get('me').catch(() => {
-        window.localStorage.clear()
-        navigation('/')
+    useEffect(() => {
+      api.get("users/all").then((response) => {
+        const data = response.data.users;
+        if (data) {
+          const counts = {};
+          data.forEach((user: { created_at: string | number | Date }) => {
+            const date = new Date(user.created_at);
+            const monthOfCreation = date.getMonth();
+            const yearOfCreation = date.getFullYear();
+
+            let monthAndYear;
+            if ((monthOfCreation + 1).toString().length < 2) {
+              monthAndYear = `0${monthOfCreation + 1}-${yearOfCreation}`;
+            } else {
+              monthAndYear = `${monthOfCreation + 1}-${yearOfCreation}`;
+            }
+
+            if (counts[monthAndYear]) {
+              counts[monthAndYear] += 1;
+            } else {
+              counts[monthAndYear] = 1;
+            }
+          });
+          const array = Object.entries(counts).map(([monthAndYear, qtde]) => {
+            return { monthAndYear, qtde };
+          });
+
+          array.sort((a, b) => {
+            const [aMonth, aYear] = a.monthAndYear.split("-");
+            const [bMonth, bYear] = b.monthAndYear.split("-");
+            const aDate = Number(new Date(Number(aYear), Number(aMonth)));
+            const bDate = Number(new Date(Number(bYear), Number(bMonth)));
+
+            return aDate - bDate;
+          });
+
+          setUsersPerMonth(array);
+        }
       })
-    }, [])
+    }, []);
+
     return (
       <Can permissions={['metrics.list']}>
-        <Flex h={"100vh"} w='100%' my='6' flex={1} maxWidth={1480}>
-          <SimpleGrid
-            flex='1'
-            gap='4'
-            minChildWidth='328px'
-            alignItems='flex-start'
-          >
-            <Box p='8' bg='gray.800' borderRadius={8}>
-              <Text fontSize='lg' mb='4'>
-                Inscritos da semana
-              </Text>
-              <Chart
-                type='area'
-                height={160}
-                options={options}
-                series={series}
-              />
-            </Box>
-            <Box p='8' bg='gray.800' borderRadius={8}>
-              <Text fontSize='lg' mb='4'>
-                Taxa de abertura
-              </Text>
-              <Chart
-                type='area'
-                height={160}
-                options={options}
-                series={series}
-              />
-            </Box>
-          </SimpleGrid>
-        </Flex>
+        {usersPerMonth.length > 0 ? 
+        (<Flex direction='column' align='center' w='100%'  overflow='auto'>
+          <Heading fontSize={28}>Número de usuários cadastrados por mês</Heading>
+          <LineChart width={usersPerMonth.length*90} height={400} data={usersPerMonth}>
+            <Line type='monotone' dataKey='qtde' stroke='#8884d8' label='qtde'/>
+            <XAxis dataKey='monthAndYear' />
+            <YAxis />
+            <Tooltip />
+          </LineChart>
+        </Flex> ) : (<Center h='100vh' w='100%'> <Spinner /></Center>) 
+        }
       </Can>
     );
 }
+
+

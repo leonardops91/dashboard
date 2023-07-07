@@ -1,4 +1,4 @@
-import { Flex, Button, Stack, Alert, AlertDescription, AlertIcon, Text } from "@chakra-ui/react";
+import { Flex, Button, Stack, Alert, AlertDescription, AlertIcon } from "@chakra-ui/react";
 import { FieldError, FieldValues, SubmitHandler, useForm } from "react-hook-form";
 import { Input } from "../../components/form/input"
 import * as yup from 'yup'
@@ -6,7 +6,6 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { useAuthentication } from "../../contexts/AuthContext";
 import { useNavigate } from "react-router";
 import { useEffect, useState } from "react";
-import { useCan } from "../../services/hooks/useCan";
 
 type SignInFormData = {
   email: string,
@@ -34,8 +33,6 @@ export default function Home() {
       
 
     }
-
-
 
     useEffect(() => {
       if (isAuthenticated) {

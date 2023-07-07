@@ -1,4 +1,4 @@
-import { ActiveModelSerializer, Factory, Model, Response, createServer, Server } from "miragejs";
+import { ActiveModelSerializer, Factory, Model, Response, createServer } from "miragejs";
 import {faker} from '@faker-js/faker'
 
 export type User = {
@@ -20,7 +20,7 @@ export function makeServer() {
     factories: {
       user: Factory.extend({
         id() {
-          return faker.datatype.uuid();
+          return faker.string.uuid();
         },
         name() {
           return faker.person.fullName();
@@ -29,13 +29,13 @@ export function makeServer() {
           return faker.internet.email().toLowerCase();
         },
         createdAt() {
-          return faker.date.recent({ days: 10 });
+          return faker.date.recent({ days: 365 });
         }
       })
     },
 
     seeds(server) {
-      server.createList("user", 10);
+      server.createList("user", 500);
     },
 
     routes() {
@@ -56,6 +56,9 @@ export function makeServer() {
           { "x-total-count": String(total) },
           { users }
         );
+      });
+      this.get("/users/all", function (schema) {
+        return schema.all("user")
       });
       this.get("/users/:id");
       this.post("/users");
